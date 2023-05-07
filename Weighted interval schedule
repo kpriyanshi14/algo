@@ -1,72 +1,103 @@
-#include <algorithm>
-#include <iostream>
+#include<iostream>
 using namespace std;
- 
-// A job has start time, finish time and profit.
-struct Job {
-    int start, finish, profit;
-};
- 
-// A utility function that is used for sorting events
-// according to finish time
-bool jobComparator(Job s1, Job s2)
+// To find p(j).
+int compute_pj(int start[], int finish[], int j)
 {
-    return (s1.finish < s2.finish);
-}
- 
-// Find the latest job (in sorted array) that doesn't
-// conflict with the job[i]
-int latestNonConflict(Job arr[], int i)
+ int p = 0;
+for(int i = j-1; i > 0; i--)
 {
-    for (int j = i - 1; j >= 0; j--) {
-        if (arr[j].finish <= arr[i].start)
-            return j;
-    }
-    return -1;
+ if( finish[i] <= start[j] )
+ p++;
 }
- 
-// The main function that returns the maximum possible
-// profit from given array of jobs
-int findMaxProfit(Job arr[], int n)
+return p;
+}
+// To use the recursive formula: max(Wj + OPT(p(j)), OPT(j-1))
+int compute_opt(int j, int start[], int finish[], int w[])
 {
-    // Sort jobs according to finish time
-    sort(arr, arr + n, jobComparator);
- 
-    // Create an array to store solutions of subproblems.
-    // table[i] stores the profit for jobs till arr[i]
-    // (including arr[i])
-    int* table = new int[n];
-    table[0] = arr[0].profit;
- 
-    // Fill entries in M[] using recursive property
-    for (int i = 1; i < n; i++) {
-        // Find profit including the current job
-        int inclProf = arr[i].profit;
-        int l = latestNonConflict(arr, i);
-        if (l != -1)
-            inclProf += table[l];
- 
-        // Store maximum of including and excluding
-        table[i] = max(inclProf, table[i - 1]);
-    }
- 
-    // Store result and free dynamic memory allocated for
-    // table[]
-    int result = table[n - 1];
-    delete[] table;
- 
-    return result;
+if(j == 0)
+return 0;
+90
+else
+ return max( w[j] + compute_opt( compute_pj(start, finish, j), start,
+finish, w), compute_opt(j-1, start, finish, w));
 }
- 
-// Driver program
 int main()
 {
-    Job arr[] = { { 3, 10, 20 },
-                  { 1, 2, 50 },
-                  { 6, 19, 100 },
-                  { 2, 100, 200 } };
-    int n = sizeof(arr) / sizeof(arr[0]);
-    cout << "The optimal profit is "
-         << findMaxProfit(arr, n);
-    return 0;
+/* List of jobs: (start_time, finish_time, weight).
+ Eg:
+ {0, 3, 3},
+ {1, 4, 2},
+ {0, 5, 4},
+ {3, 6, 1},
+ {4, 7, 2},
+ {3, 9, 5}.
+ */
+
+int n, temp;
+cout<<"\n Enter the total no of jobs: ";
+cin>>n;
+int start_time[n];
+int finish_time[n];
+int weight[n];
+90
+int p[n];
+for(int i = 1; i <= n; i++)
+{
+cout<<"\n Enter details for Job "<<i<<":";
+cout<<"\n Start time: ";
+cin>>start_time[i];
+cout<<" Finish time: ";
+cin>>finish_time[i];
+cout<<" Weight: ";
+cin>>weight[i];
+cout<<endl;
+}
+// Sorting jobs by their finish time.
+for(int i = 1; i <= n; i++)
+{
+for(int j = 1; j <= n-i; j++)
+{
+ if( finish_time[j] > finish_time[j+1] )
+ {
+ temp = finish_time[j];
+ finish_time[j] = finish_time[j+1];
+90
+ finish_time[j+1] = temp;
+
+ temp = start_time[j];
+ start_time[j] = start_time[j+1];
+ start_time[j+1] = temp;
+
+ temp = weight[j];
+ weight[j] = weight[j+1];
+ weight[j+1] = temp;
+ }
+}
+}
+cout<<"\n After Sorting:";
+cout<<"\n Start Time: ";
+for(int i = 1; i <= n; i++)
+cout<<start_time[i]<<" ";
+cout<<"\n Finish Time: ";
+for(int i = 1; i <= n; i++)
+cout<<finish_time[i]<<" ";
+cout<<"\n Weight: ";
+for(int i = 1; i <= n; i++)
+cout<<weight[i]<<" ";
+cout<<endl;
+90
+// Computing p(j).
+for(int j = 1; j <= n; j++)
+{
+p[j] = compute_pj(start_time, finish_time, j);
+}
+cout<<"\n w(j): ";
+for(int i = 1; i <= n; i++)
+cout<<weight[i]<<" ";
+cout<<"\n p(j): ";
+for(int i = 1; i <= n; i++)
+cout<<p[i]<<" ";
+cout<<"\n Maximum profit is: "<<compute_opt(n, start_time,
+finish_time, weight);
+return 0;
 }
